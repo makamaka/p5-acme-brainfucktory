@@ -14,7 +14,6 @@ sub new {
 
     $opt ||= {};
 
-    $bf->set_bf_opts();
     $bf->set_op_table( $opt->{ op_table } );
     $bf->set_regexp();
 
@@ -24,18 +23,15 @@ sub new {
 }
 
 
-sub set_bf_opts {
-    my $bf = shift;
-    $bf->{ bf_opts } = {
-        '<' => '$sp--;',
-        '>' => '$sp++;',
-        '+' => '$data[$sp]++;',
-        '-' => '$data[$sp]--;',
-        '.' => 'push @out, $data[$sp];',
-        ',' => '$data[$sp] = shift @_;',
-        '[' => 'while($data[$sp]){',
-        ']' => '}',
-     };
+sub new_from_file { # copied and modified from Language::BF
+    my ( $class, $filename, $opt ) = @_;
+    my $bf    = $class->new( $opt );
+    my $bfile = $filename or die __PACKAGE__, "->new_from_file(filename)";
+    open my $fh, "<", $bfile or die "$bfile:$!";
+    my $src = do { local $/; <$fh> };
+    close $fh;
+    $bf->code($src);
+    $bf;
 }
 
 
@@ -65,7 +61,7 @@ sub set_op_table {
 }
 
 
-sub code($$) { # copied and modified from Language::BF
+sub code { # copied and modified from Language::BF
     my ( $bf, $code ) = @_;
     my $re = $bf->{ op_re };
 
@@ -87,6 +83,86 @@ sub code($$) { # copied and modified from Language::BF
     $bf->reset;
     $bf;
 }
+
+*parse = \&code;
+
+
+sub input {
+    my ($bf, $input) = @_;
+    $bf->{in} =  $input;
+    $bf;
+}
+
+
+sub compile { # copied and modified from Language::BF
+    my $bf  = shift;
+    my $src = <<'EOS';
+sub { 
+my (@data, @out) = ();
+my $sp = 0;
+EOS
+    for my $op ( @{ $bf->{code} } ) {
+        $src .= {
+            '<' => '$sp--;',
+            '>' => '$sp++;',
+            '+' => '$data[$sp]++;',
+            '-' => '$data[$sp]--;',
+            '.' => 'push @out, $data[$sp];',
+            ',' => '$data[$sp] = getc( $_[0] );',
+            '[' => 'while($data[$sp]){',
+            ']' => '}',
+          }->{$op}
+          . "\n";
+    }
+    $src .= <<'EOS';
+return @out
+}
+EOS
+    my $coderef = eval $src;
+    return $@ ? $@ : $coderef;
+}
+
+
+sub step { # copied and modified from Language::BF
+    my $bf = shift;
+    my $op = $bf->{code}[ $bf->{pc} ];
+    $bf->{debug}
+      and warn sprintf "pc=%d, sp=%d, op=%s", $bf->{pc}, $bf->{sp}, $op;
+    {
+        '<' => sub { $bf->{sp} -= 1 },
+        '>' => sub { $bf->{sp} += 1 },
+        '+' => sub { $bf->{data}[ $bf->{sp} ]++ },
+        '-' => sub { $bf->{data}[ $bf->{sp} ]-- },
+        '.' => sub { push @{ $bf->{out} }, $bf->{data}[ $bf->{sp} ] },
+        ',' => sub { $bf->{data}[ $bf->{sp} ] = getc( $bf->{in} ) },
+        '[' => sub {
+            return if $bf->{data}[ $bf->{sp} ];
+            my $nest = 1;
+            while ($nest) {
+                $bf->{pc} += 1;
+                $nest     +=
+                    $bf->{code}[ $bf->{pc} ] eq '[' ? +1
+                  : $bf->{code}[ $bf->{pc} ] eq ']' ? -1
+                  : 0;
+                die "matching ] not found!" if $bf->{pc} > scalar @{ $bf->{code} };
+            }
+        },
+        ']' => sub {
+            my $nest = 1;
+            while ($nest) {
+                $bf->{pc} -= 1;
+                $nest     -=
+                    $bf->{code}[ $bf->{pc} ] eq '[' ? +1
+                  : $bf->{code}[ $bf->{pc} ] eq ']' ? -1
+                  : 0;
+                    die "matching [ not found!" if $bf->{pc} < 0;
+            }
+            $bf->{pc}--;
+        },
+    }->{$op}();
+    $bf->{pc}++;
+}
+
 
 
 1;
