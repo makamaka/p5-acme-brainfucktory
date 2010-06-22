@@ -207,21 +207,32 @@ Acme::BrainFucktory - brainf*ck generator
     } );
 
     $nekomimi->code(<<CODE);
-    おにいさまおにいさまおにいさまおにいさまキスキス…ネコミミ！おにいさまおにいさま
-    おにいさまおにいさまキスキス…ネコミミ！おにいさまおにいさまおにいさまおにいさま
-    ネコミミ！おにいさまおにいさまおにいさまおにいさまおにいさまおにいさまネコミミ！
-    おにいさまおにいさまネコミミモードネコミミモードネコミミモード私のしもべー
-    キス…したくなっちゃった…ネコミミ！おにいさまおにいさまネコミミ！
+    おにいさまおにいさまおにいさまおにいさまキスキス…
+    ネコミミ！おにいさまおにいさま
+    おにいさまおにいさまキスキス…ネコミミ！
+    おにいさまおにいさまおにいさまおにいさま
+    ネコミミ！おにいさまおにいさまおにいさま
+    おにいさまおにいさまおにいさまネコミミ！
+    おにいさまおにいさまネコミミモードネコミミモード
+    ネコミミモード私のしもべー
+    キス…したくなっちゃった…ネコミミ！
+    おにいさまおにいさまネコミミ！
     おにいさま
-    ネコミミモードネコミミモードネコミミモード私のしもべーキス…したくなっちゃった…
-    ネコミミ！ネコミミ！や・く・そ・く・よネコミミ！おにいさまや・く・そ・く・よ
-    おにいさまおにいさまおにいさまおにいさまおにいさまおにいさまおにいさま
-    や・く・そ・く・よや・く・そ・く・よおにいさまおにいさまおにいさま
+    ネコミミモードネコミミモードネコミミモード
+    私のしもべーキス…したくなっちゃった…
+    ネコミミ！ネコミミ！や・く・そ・く・よネコミミ！
+    おにいさまや・く・そ・く・よ
+    おにいさまおにいさまおにいさまおにいさまおにいさま
+    おにいさまおにいさま
+    や・く・そ・く・よや・く・そ・く・よ
+    おにいさまおにいさまおにいさま
     や・く・そ・く・よ
-    ネコミミ！や・く・そ・く・よネコミミモードネコミミモード私のしもべー
+    ネコミミ！や・く・そ・く・よ
+    ネコミミモードネコミミモード私のしもべー
     ネコミミモード
-    おにいさまおにいさまおにいさまおにいさまキスキス…ネコミミ！おにいさまおにいさま
-    おにいさまおにいさまネコミミモード私のしもべーキス…したくなっちゃった…ネコミミ！
+    おにいさまおにいさまおにいさまおにいさまキスキス…ネコミミ！
+    おにいさまおにいさまおにいさまおにいさまネコミミモード
+    私のしもべーキス…したくなっちゃった…ネコミミ！
     や・く・そ・く・よネコミミ！や・く・そ・く・よおにいさまおにいさま
     おにいさま
     や・く・そ・く・よ私のしもべー私のしもべー私のしもべー私のしもべー
@@ -243,33 +254,88 @@ Welcome to BrainF*ck factory.
 
 =head1 METHODS
 
+Except for C<new> and C<new_from_file>, methods are same as L<Language::BF>.
+
 =head2 new
 
     $bf = Acme::BrainFucktory->new();
+    
+    $bf = Acme::BrainFucktory->new( $hashref );
 
-Constructor. Default by brainf*ck!
+Constructs a brainf*ck virtual machine.
+Options:
 
 =over
 
 =item op_table
 
+A list of opcode for your terrible language.
+This is a hash reference must hold values:
+
+C<E<gt>>,
+C<E<lt>>,
+C<+>,
+C<->,
+C<.>,
+C<,>,
+C<[>,
+C<]>,
+
+    my $your_lang = Acme::BrainFucktory->new( {
+        op_table => {
+            1 => '>',
+            2 => '<',
+            3 => '+',
+            4 => '-',
+            5 => '.',
+            6 => ',',
+            7 => '[',
+            8 => ']',
+        }
+    } );
+
+By default Brainf*ck.
+
+=item input
+
+Sets C<STDIN>.
+
+=item code
+
+Your terrible code in your terrible language.
+
 =back
+
+=head2 new_from_file
+
+    $bf = Acme::BrainFucktory->new_from_file( $otp, $filename );
+
+Constructs a brainf*ck virtual machine from BF source file.
 
 =head2 code
 
+    $bf->code( $code );
+
 Set your terrible code in your terrible language!
+
+=head2 parse
+
+Alias to C<code>.
 
 =head2 run
 
+    $bf->run( $boolean );
+
 Run your terrible code in your terrible language!
+
+By default it runs perl-compiled code.
+By setting $mode to non-zero value, it runs as an iterpreter.
 
 =head2 output
 
+    $result = $bf->output;
+
 Output your terrible result in your terrible language!
-
-=head1 TODO
-
-All Language::BF methods.
 
 =head1 SEE ALSO
 
