@@ -75,7 +75,9 @@ sub code($$) { # copied and modified from Language::BF
 
     while ( $code =~ /($re)/g ) {
         next unless length $1;
-        push @codes, $1;
+        my $op = $1;
+        Carp::croak "Can't understand op [$op]." unless exists $bf->{ op_table }->{ $op };
+        push @codes, $bf->{ op_table }->{ $op };
     }
 
     $bf->{code} = \@codes;
@@ -85,27 +87,6 @@ sub code($$) { # copied and modified from Language::BF
     $bf->reset;
     $bf;
 }
-
-
-sub compile($){ # copied and modified from Language::BF
-    my $bf  = shift;
-    my $src = <<'EOS';
-sub { 
-my (@data, @out) = ();
-my $sp = 0;
-EOS
-    for my $op ( @{ $bf->{code} } ) {
-        Carp::croak "Can't understand op [$op]." unless exists $bf->{ op_table }->{ $op };
-        $src .= $bf->{ bf_opts }->{ $bf->{ op_table }->{ $op } } . "\n";
-    }
-    $src .= <<'EOS';
-return @out
-}
-EOS
-    my $coderef = eval $src;
-    return $@ ? $@ : $coderef;
-}
-
 
 
 1;
