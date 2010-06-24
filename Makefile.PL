@@ -8,6 +8,7 @@ WriteMakefile(
     'VERSION_FROM'  => 'lib/Acme/BrainFucktory.pm', # finds $VERSION
     'PREREQ_PM'     => {
               'Test::More'          => 0,
+              'Test::Output'        => '0.16',
               'Language::BF'        => '0.03',
               'Regexp::Assemble '   => '0.34',
     },
