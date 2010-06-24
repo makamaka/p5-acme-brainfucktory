@@ -1,28 +1,30 @@
 
+use strict;
 use Test::More 'no_plan';
+use Test::Output;
 use utf8;
 
 BEGIN { use_ok('Acme::BrainFucktory') };
 
 
-my $fxck = Acme::BrainFucktory->new();
+
+
+my $bf = Acme::BrainFucktory->new();
 
 # from http://search.cpan.org/~dankogai/Language-BF-0.03/lib/Language/BF.pm
 
-$fxck->code(<<CODE);
+$bf->code(<<CODE);
 ++++++++++[>+++++++>++++++++++>+++>+<<<<-]
 >++.>+.+++++++..+++.>++.<<+++++++++++++++.>
 .+++.------.--------.>+.>.
 CODE
 
-$fxck->run;
-
-is( $fxck->output, "Hello World!\n", 'default' );
+stdout_is( sub { $bf->run }, "Hello World!\n", 'default' );
 
 # from http://d.hatena.ne.jp/tokuhirom/20041015/p14
 
 my $nekomimi = Acme::BrainFucktory->new( {
-    op_table => {
+    optable => {
         'ネコミミ！'                    => '>',
         'ネコミミモード'                => '<',
         'おにいさま'                    => '+',
@@ -61,16 +63,14 @@ $nekomimi->code(<<CODE);
 おにいさまや・く・そ・く・よ
 CODE
 
-$nekomimi->run;
-
-is( $nekomimi->output, "Hello World!", 'nekomimi' );
+stdout_is( sub { $nekomimi->run }, "Hello World!", 'nekomimi' );
 
 #exit;
 
 # from http://homepage2.nifty.com/kujira_niku/okayu/misa.html
 
 my $misa = Acme::BrainFucktory->new( {
-    op_table => {
+    optable => {
         '>'                     => '>',
         '→'                    => '>',
         '～'                    => '>',
@@ -145,6 +145,4 @@ $misa->code(<<CODE);
 
 CODE
 
-$misa->run;
-
-is( $misa->output, "Hello\0World!\n", 'misa' );
+stdout_is( sub { $misa->run }, "Hello\0World!\n", 'misa' );
