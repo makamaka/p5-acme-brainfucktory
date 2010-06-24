@@ -1,12 +1,12 @@
 package Acme::BrainFucktory;
 
 use strict;
-use base qw( Language::BF );
+use Term::ReadKey;
 use Regexp::Assemble;
 use Carp ();
 
-
 our $VERSION = '0.01';
+
 
 sub new {
     my ( $class, $opt ) = @_;
@@ -108,6 +108,7 @@ sub run { # copied and modified from Language::BF
     my ($bf, $interpret) = @_;
 
     if ( $interpret ) {
+        $bf->reset;
         $bf->step while ( $bf->{code}[ $bf->{pc} ] and $bf->{pc} >= 0 );
     }
     else {
@@ -146,11 +147,11 @@ sub code { # copied and modified from Language::BF
 sub compile { # copied and modified from Language::BF
     my $bf  = shift;
     my $src = <<'EOS';
-    use Term::ReadKey;
-sub { 
-my (@data, @out) = ();
-my $sp = 0;
+
+sub {
     my ( $stdin, $stdout ) = @_;
+    my @data;
+    my $sp = 0;
 EOS
     for my $op ( @{ $bf->{code} } ) {
         $src .= {
@@ -166,7 +167,6 @@ EOS
           . "\n";
     }
     $src .= <<'EOS';
-return @out
 }
 EOS
     my $coderef = eval $src;
@@ -179,9 +179,6 @@ sub step { # copied and modified from Language::BF
     my $op  = $bf->{code}[ $bf->{pc} ];
     $bf->{debug}
       and warn sprintf "pc=%d, sp=%d, op=%s", $bf->{pc}, $bf->{sp}, $op;
-
-    require Term::ReadKey;
-    Term::ReadKey->import();
 
     {
         '<' => sub { $bf->{sp} -= 1 },
