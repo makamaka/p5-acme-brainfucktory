@@ -14,9 +14,10 @@ sub new {
 
     $opt ||= {};
 
-    $bf->set_op_table( $opt->{ op_table } );
-    $bf->set_regexp();
+    $bf->_set_optable( $opt->{ optable } );
+    $bf->_set_regexp();
 
+    $bf->preprocess( exists $opt->{ preprocess } ? $opt->{ preprocess } : $bf->_default_regexp() );
     $bf->code( $opt->{ code } )   if exists $opt->{ code };
     $bf->input( $opt->{ input } ) if exists $opt->{ input };
     $bf;
@@ -35,20 +36,37 @@ sub new_from_file { # copied and modified from Language::BF
 }
 
 
-sub set_regexp {
+sub preprocess {
+    $_[0]->{ preprocess } = $_[1] if @_ > 1;
+    $_[0]->{ preprocess };
+}
+
+
+sub _set_regexp {
     my $bf = shift;
     my $ra = Regexp::Assemble->new;
-    for my $k ( keys %{ $bf->{ op_table } } ) {
-        Carp::croak "Invalid op table." if $bf->{ op_table }->{ $k } !~ /[-+><\.,[\]]/;
+    for my $k ( keys %{ $bf->{ optable } } ) {
+        Carp::croak "Invalid op table." if $bf->{ optable }->{ $k } !~ /[-+><\.,[\]]/;
         $ra->add( '\Q' . $k . '\E' );
     }
+
     $bf->{ op_re } = $ra->re;
 }
 
 
-sub set_op_table {
-    my ( $bf, $op_table ) = @_;
-    $bf->{ op_table } = $op_table || {
+sub _default_regexp {
+    my $bf = shift;
+    my $re = $bf->{ op_re };
+    return sub {
+        my $coderef = shift;
+        $$coderef =~ s{(?:($re)|(.))}{ defined $1 ? $1 : '' }eg;
+    };
+}
+
+
+sub _set_optable {
+    my ( $bf, $optable ) = @_;
+    $bf->{ optable } = $optable || {
         '<' => '<',
         '>' => '>',
         '+' => '+',
@@ -65,15 +83,15 @@ sub code { # copied and modified from Language::BF
     my ( $bf, $code ) = @_;
     my $re = $bf->{ op_re };
 
-    $code =~ s{(?:($re)|(.))}{ defined $1 ? $1 : '' }eg;
+    $bf->preprocess->( \$code );
 
     my @codes;
 
     while ( $code =~ /($re)/g ) {
         next unless length $1;
         my $op = $1;
-        Carp::croak "Can't understand op [$op]." unless exists $bf->{ op_table }->{ $op };
-        push @codes, $bf->{ op_table }->{ $op };
+        Carp::croak "Can't understand op [$op]." unless exists $bf->{ optable }->{ $op };
+        push @codes, $bf->{ optable }->{ $op };
     }
 
     $bf->{code} = \@codes;
@@ -194,7 +212,7 @@ Acme::BrainFucktory - brainf*ck generator
 
     # from http://d.hatena.ne.jp/tokuhirom/20041015/p14
     my $nekomimi = Acme::BrainFucktory->new( {
-        op_table => {
+        optable => {
             'ネコミミ！'                    => '>',
             'ネコミミモード'                => '<',
             'おにいさま'                    => '+',
@@ -247,6 +265,46 @@ Acme::BrainFucktory - brainf*ck generator
     $nekomimi->run;
     $nekomimi->output; # "Hello World!";
 
+    my $ook = Acme::BrainFucktory->new( {
+        preprocess => sub {
+            my $code = ${ $_[0] };
+            ${ $_[0] } =~ s{Ook(.) Ook(.)}{$1$2}g;
+        },
+        optable => {
+            '.?' => '>',
+            '?.' => '<',
+            '..' => '+',
+            '!!' => '-',
+            '!.' => '.',
+            '.!' => ',',
+            '!?' => '[',
+            '?!' => ']',
+        },
+    } );
+    
+    $ook->code(<<CODE);
+    Ook. Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+    Ook. Ook. Ook. Ook. Ook! Ook? Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+    Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook? Ook! Ook! Ook? Ook! Ook? Ook.
+    Ook! Ook. Ook. Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+    Ook. Ook. Ook! Ook? Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook?
+    Ook! Ook! Ook? Ook! Ook? Ook. Ook. Ook. Ook! Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+    Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook! Ook. Ook! Ook. Ook. Ook. Ook. Ook.
+    Ook. Ook. Ook! Ook. Ook. Ook? Ook. Ook? Ook. Ook? Ook. Ook. Ook. Ook. Ook. Ook.
+    Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook! Ook? Ook? Ook. Ook. Ook.
+    Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook? Ook! Ook! Ook? Ook! Ook? Ook. Ook! Ook.
+    Ook. Ook? Ook. Ook? Ook. Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+    Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook! Ook? Ook? Ook. Ook. Ook.
+    Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+    Ook. Ook? Ook! Ook! Ook? Ook! Ook? Ook. Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook.
+    Ook? Ook. Ook? Ook. Ook? Ook. Ook? Ook. Ook! Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+    Ook! Ook. Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook.
+    Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook!
+    Ook! Ook. Ook. Ook? Ook. Ook? Ook. Ook. Ook! Ook. 
+    CODE
+    
+    $ook->run;
+    $ook->output; # "Hello World!";
 
 =head1 DESCRIPTION
 
@@ -267,7 +325,7 @@ Options:
 
 =over
 
-=item op_table
+=item optable
 
 A list of opcode for your terrible language.
 This is a hash reference must hold values:
@@ -282,7 +340,7 @@ C<[>,
 C<]>,
 
     my $your_lang = Acme::BrainFucktory->new( {
-        op_table => {
+        optable => {
             1 => '>',
             2 => '<',
             3 => '+',
@@ -295,6 +353,29 @@ C<]>,
     } );
 
 By default Brainf*ck.
+
+=item preprocess
+
+A subroutine reference that is executed on C<code> method being called.
+
+    $ook = Acme::BrainFucktory->new( {
+        preprocess => sub {
+            my $code = ${ $_[0] };
+            ${ $_[0] } =~ s{Ook(.) Ook(.)}{$1$2}g;
+        },
+        optable => {
+            '.?' => '>',
+            '?.' => '<',
+            '..' => '+',
+            '!!' => '-',
+            '!.' => '.',
+            '.!' => ',',
+            '!?' => '[',
+            '?!' => ']',
+        },
+    } );
+
+By default it deletes all characters exception for opcodes.
 
 =item input
 
