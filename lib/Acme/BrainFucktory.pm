@@ -14,12 +14,16 @@ sub new {
 
     $opt ||= {};
 
+    $bf->reset;
+
     $bf->_set_optable( $opt->{ optable } );
     $bf->_set_regexp();
 
     $bf->preprocess( exists $opt->{ preprocess } ? $opt->{ preprocess } : $bf->_default_regexp() );
-    $bf->code( $opt->{ code } )   if exists $opt->{ code };
-    $bf->input( $opt->{ input } ) if exists $opt->{ input };
+    $bf->code( $opt->{ code } )     if exists $opt->{ code };
+    $bf->input(  exists $opt->{ input }  ? $opt->{ input }  : *STDIN  );
+    $bf->output( exists $opt->{ output } ? $opt->{ output } : *STDOUT );
+
     $bf;
 }
 
@@ -79,6 +83,40 @@ sub _set_optable {
 }
 
 
+sub input {
+    my ($bf, $input) = @_;
+    $bf->{in} = $input if @_ > 1;
+    $bf->{in};
+}
+
+
+sub output {
+    my ($bf, $output) = @_;
+    $bf->{out} = $output if @_ > 1;
+    $bf->{out};
+}
+
+
+sub reset {
+    my $bf = shift;
+    ( $bf->{pc}, $bf->{sp} ) = ( 0, 0 );
+    $bf;
+}
+
+
+sub run { # copied and modified from Language::BF
+    my ($bf, $interpret) = @_;
+
+    if ( $interpret ) {
+        $bf->step while ( $bf->{code}[ $bf->{pc} ] and $bf->{pc} >= 0 );
+    }
+    else {
+        $bf->{coderef}->( $bf->input, $bf->output );
+    }
+
+}
+
+
 sub code { # copied and modified from Language::BF
     my ( $bf, $code ) = @_;
     my $re = $bf->{ op_re };
@@ -98,26 +136,21 @@ sub code { # copied and modified from Language::BF
     my $coderef = $bf->compile;
     warn $coderef unless ref $coderef;
     $bf->{coderef} = $bf->compile;
-    $bf->reset;
+
     $bf;
 }
 
 *parse = \&code;
 
 
-sub input {
-    my ($bf, $input) = @_;
-    $bf->{in} =  $input;
-    $bf;
-}
-
-
 sub compile { # copied and modified from Language::BF
     my $bf  = shift;
     my $src = <<'EOS';
+    use Term::ReadKey;
 sub { 
 my (@data, @out) = ();
 my $sp = 0;
+    my ( $stdin, $stdout ) = @_;
 EOS
     for my $op ( @{ $bf->{code} } ) {
         $src .= {
@@ -125,8 +158,8 @@ EOS
             '>' => '$sp++;',
             '+' => '$data[$sp]++;',
             '-' => '$data[$sp]--;',
-            '.' => 'push @out, $data[$sp];',
-            ',' => '$data[$sp] = getc( $_[0] );',
+            '.' => 'print $stdout chr $data[$sp];',
+            ',' => 'ReadMode "cbreak"; $data[$sp] = ord ReadKey(0, $stdin); ReadMode "normal";',
             '[' => 'while($data[$sp]){',
             ']' => '}',
           }->{$op}
@@ -142,17 +175,21 @@ EOS
 
 
 sub step { # copied and modified from Language::BF
-    my $bf = shift;
-    my $op = $bf->{code}[ $bf->{pc} ];
+    my $bf  = shift;
+    my $op  = $bf->{code}[ $bf->{pc} ];
     $bf->{debug}
       and warn sprintf "pc=%d, sp=%d, op=%s", $bf->{pc}, $bf->{sp}, $op;
+
+    require Term::ReadKey;
+    Term::ReadKey->import();
+
     {
         '<' => sub { $bf->{sp} -= 1 },
         '>' => sub { $bf->{sp} += 1 },
         '+' => sub { $bf->{data}[ $bf->{sp} ]++ },
         '-' => sub { $bf->{data}[ $bf->{sp} ]-- },
-        '.' => sub { push @{ $bf->{out} }, $bf->{data}[ $bf->{sp} ] },
-        ',' => sub { $bf->{data}[ $bf->{sp} ] = getc( $bf->{in} ) },
+        '.' => sub { print {$bf->{out}} chr $bf->{data}[ $bf->{sp} ] },
+        ',' => sub { ReadMode("cbreak"); $bf->{data}[ $bf->{sp} ] = ord ReadKey(0, $bf->{in}); ReadMode("normal"); },
         '[' => sub {
             return if $bf->{data}[ $bf->{sp} ];
             my $nest = 1;
