@@ -216,6 +216,22 @@ sub step { # copied and modified from Language::BF
 }
 
 
+sub as_source {
+    my $bf = shift;
+    require B::Deparse;
+    my $source = B::Deparse->new()->coderef2text( $bf->{coderef} );
+    $source =~ s{package Acme::BrainFucktory;}{package Acme::BrainFucktory;\n    use Term::ReadKey;};
+    $source;
+}
+
+
+sub as_perl {
+    'print map{chr} sub ' . $_[0]->as_source. '->( *STDIN, *STDOUT )';
+}
+
+#perl -I./lib -MAcme::BrainFucktory -le"print Acme::BrainFucktory->new_from_file(shift)->as_perl" test.b | perl
+
+
 
 1;
 __END__
