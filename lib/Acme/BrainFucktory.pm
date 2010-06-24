@@ -244,8 +244,7 @@ Acme::BrainFucktory - brainf*ck generator
     .+++.------.--------.>+.>.
     CODE
 
-    $bf->run;
-    $bf->output; # "Hello World!\n"
+    $bf->run; # "Hello World!\n"
 
     # from http://d.hatena.ne.jp/tokuhirom/20041015/p14
     my $nekomimi = Acme::BrainFucktory->new( {
@@ -299,8 +298,7 @@ Acme::BrainFucktory - brainf*ck generator
     おにいさまや・く・そ・く・よ
     CODE
     
-    $nekomimi->run;
-    $nekomimi->output; # "Hello World!";
+    $nekomimi->run; # "Hello World!";
 
     my $ook = Acme::BrainFucktory->new( {
         preprocess => sub {
@@ -340,8 +338,7 @@ Acme::BrainFucktory - brainf*ck generator
     Ook! Ook. Ook. Ook? Ook. Ook? Ook. Ook. Ook! Ook. 
     CODE
     
-    $ook->run;
-    $ook->output; # "Hello World!";
+    $ook->run; # "Hello World!";
 
 =head1 DESCRIPTION
 
@@ -349,7 +346,7 @@ Welcome to BrainF*ck factory.
 
 =head1 METHODS
 
-Except for C<new> and C<new_from_file>, methods are same as L<Language::BF>.
+The concepts of almost methods come from L<Language::BF>.
 
 =head2 new
 
@@ -448,12 +445,6 @@ Run your terrible code in your terrible language!
 
 By default it runs perl-compiled code.
 By setting $mode to non-zero value, it runs as an iterpreter.
-
-=head2 output
-
-    $result = $bf->output;
-
-Output your terrible result in your terrible language!
 
 =head1 SEE ALSO
 

@@ -13,12 +13,11 @@ SYNOPSIS
         .+++.------.--------.>+.>.
         CODE
 
-        $bf->run;
-        $bf->output; # "Hello World!\n"
+        $bf->run; # "Hello World!\n"
 
         # from http://d.hatena.ne.jp/tokuhirom/20041015/p14
         my $nekomimi = Acme::BrainFucktory->new( {
-            op_table => {
+            optable => {
                 'ネコミミ！'                    => '>',
                 'ネコミミモード'                => '<',
                 'おにいさま'                    => '+',
@@ -68,14 +67,53 @@ SYNOPSIS
         おにいさまや・く・そ・く・よ
         CODE
     
-        $nekomimi->run;
-        $nekomimi->output; # "Hello World!";
+        $nekomimi->run; # "Hello World!";
+
+        my $ook = Acme::BrainFucktory->new( {
+            preprocess => sub {
+                my $code = ${ $_[0] };
+                ${ $_[0] } =~ s{Ook(.) Ook(.)}{$1$2}g;
+            },
+            optable => {
+                '.?' => '>',
+                '?.' => '<',
+                '..' => '+',
+                '!!' => '-',
+                '!.' => '.',
+                '.!' => ',',
+                '!?' => '[',
+                '?!' => ']',
+            },
+        } );
+    
+        $ook->code(<<CODE);
+        Ook. Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+        Ook. Ook. Ook. Ook. Ook! Ook? Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+        Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook? Ook! Ook! Ook? Ook! Ook? Ook.
+        Ook! Ook. Ook. Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+        Ook. Ook. Ook! Ook? Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook?
+        Ook! Ook! Ook? Ook! Ook? Ook. Ook. Ook. Ook! Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+        Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook! Ook. Ook! Ook. Ook. Ook. Ook. Ook.
+        Ook. Ook. Ook! Ook. Ook. Ook? Ook. Ook? Ook. Ook? Ook. Ook. Ook. Ook. Ook. Ook.
+        Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook! Ook? Ook? Ook. Ook. Ook.
+        Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook? Ook! Ook! Ook? Ook! Ook? Ook. Ook! Ook.
+        Ook. Ook? Ook. Ook? Ook. Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+        Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook! Ook? Ook? Ook. Ook. Ook.
+        Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+        Ook. Ook? Ook! Ook! Ook? Ook! Ook? Ook. Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook.
+        Ook? Ook. Ook? Ook. Ook? Ook. Ook? Ook. Ook! Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+        Ook! Ook. Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook.
+        Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook!
+        Ook! Ook. Ook. Ook? Ook. Ook? Ook. Ook. Ook! Ook. 
+        CODE
+    
+        $ook->run; # "Hello World!";
 
 DESCRIPTION
     Welcome to BrainF*ck factory.
 
 METHODS
-    Except for "new" and "new_from_file", methods are same as Language::BF.
+    The concepts of almost methods come from Language::BF.
 
   new
         $bf = Acme::BrainFucktory->new();
@@ -84,14 +122,14 @@ METHODS
 
     Constructs a brainf*ck virtual machine. Options:
 
-    op_table
+    optable
         A list of opcode for your terrible language. This is a hash
         reference must hold values:
 
         ">", "<", "+", "-", ".", ",", "[", "]",
 
             my $your_lang = Acme::BrainFucktory->new( {
-                op_table => {
+                optable => {
                     1 => '>',
                     2 => '<',
                     3 => '+',
@@ -104,6 +142,29 @@ METHODS
             } );
 
         By default Brainf*ck.
+
+    preprocess
+        A subroutine reference that is executed on "code" method being
+        called.
+
+            $ook = Acme::BrainFucktory->new( {
+                preprocess => sub {
+                    my $code = ${ $_[0] };
+                    ${ $_[0] } =~ s{Ook(.) Ook(.)}{$1$2}g;
+                },
+                optable => {
+                    '.?' => '>',
+                    '?.' => '<',
+                    '..' => '+',
+                    '!!' => '-',
+                    '!.' => '.',
+                    '.!' => ',',
+                    '!?' => '[',
+                    '?!' => ']',
+                },
+            } );
+
+        By default it deletes all characters exception for opcodes.
 
     input
         Sets "STDIN".
@@ -131,11 +192,6 @@ METHODS
 
     By default it runs perl-compiled code. By setting $mode to non-zero
     value, it runs as an iterpreter.
-
-  output
-        $result = $bf->output;
-
-    Output your terrible result in your terrible language!
 
 SEE ALSO
     Language::BF, Regexp::Assemble
