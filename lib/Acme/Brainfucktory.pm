@@ -16,13 +16,12 @@ sub new {
 
     $bf->reset;
 
-    $bf->_set_optable( $opt->{ optable } );
-    $bf->_set_regexp();
-
-    $bf->preprocess( exists $opt->{ preprocess } ? $opt->{ preprocess } : $bf->_default_regexp() );
-    $bf->code( $opt->{ code } )     if exists $opt->{ code };
-    $bf->input(  exists $opt->{ input }  ? $opt->{ input }  : *STDIN  );
+    $bf->input ( exists $opt->{ input }  ? $opt->{ input }  : *STDIN  );
     $bf->output( exists $opt->{ output } ? $opt->{ output } : *STDOUT );
+    $bf->optable   ( exists $opt->{ optable }    ? $opt->{ optable }    : $bf->_default_optable()    );
+    $bf->preprocess( exists $opt->{ preprocess } ? $opt->{ preprocess } : $bf->_default_preprocess() );
+
+    $bf->code( $opt->{ code } ) if exists $opt->{ code };
 
     $bf;
 }
@@ -40,9 +39,21 @@ sub new_from_file { # copied and modified from Language::BF
 }
 
 
+sub optable {
+    my ( $bf, $optable ) = @_;
+
+    if ( defined $optable and ref $optable eq 'HASH' ) {
+        $bf->{ optable } = $optable;
+        $bf->_set_regexp();
+    }
+
+    $bf;
+}
+
+
 sub preprocess {
     $_[0]->{ preprocess } = $_[1] if @_ > 1;
-    $_[0]->{ preprocess };
+    $_[0];
 }
 
 
@@ -58,7 +69,7 @@ sub _set_regexp {
 }
 
 
-sub _default_regexp {
+sub _default_preprocess {
     my $bf = shift;
     my $re = $bf->{ op_re };
     return sub {
@@ -68,9 +79,8 @@ sub _default_regexp {
 }
 
 
-sub _set_optable {
-    my ( $bf, $optable ) = @_;
-    $bf->{ optable } = $optable || {
+sub _default_optable {
+    return {
         '<' => '<',
         '>' => '>',
         '+' => '+',
@@ -112,7 +122,7 @@ sub run { # copied and modified from Language::BF
         $bf->step while ( $bf->{code}[ $bf->{pc} ] and $bf->{pc} >= 0 );
     }
     else {
-        $bf->{coderef}->( $bf->input, $bf->output );
+        $bf->{coderef}->( $bf->{in}, $bf->{out} );
     }
 
 }
@@ -122,7 +132,7 @@ sub code { # copied and modified from Language::BF
     my ( $bf, $code ) = @_;
     my $re = $bf->{ op_re };
 
-    $bf->preprocess->( \$code );
+    $bf->{ preprocess }->( \$code );
 
     my @codes;
 
@@ -457,11 +467,59 @@ Your terrible code in your terrible language.
 
 Constructs a brainf*ck virtual machine from BF source file.
 
+=head2 input
+
+    $bf = $bf->input( $fh );
+
+Sets input file handle. C<STDIN> by default.
+Returns the object itself.
+
+=head2 output
+
+    $bf = $bf->output( $fh );
+
+Sets output file handle. C<STDOUT> by default.
+
+=head2 optable
+
+    $bf = $bf->optable( $hashref );
+
+Sets a list of opcode for your terrible language.
+This is a hash reference must hold values:
+
+C<E<gt>>,
+C<E<lt>>,
+C<+>,
+C<->,
+C<.>,
+C<,>,
+C<[>,
+C<]>,
+
+Returns the object itself.
+
+=head2 preprocess
+
+    $bf = $bf->preprocses( $subref );
+
+Sets a subroutine reference that is executed on C<code> method being called.
+Returns the object itself.
+
+Running subroutine takes a scalar reference holds a parsed code.
+
+    $subref = sub {
+        my $code_ref = shift;
+        $$code_ref =~ s{Ook(.) Ook(.)}{$1$2}g;
+    };
+
+By default it deletes all characters exception for opcodes.
+
 =head2 code
 
-    $bf->code( $code );
+    $bf = $bf->code( $code );
 
 Set your terrible code in your terrible language!
+Returns the object itself.
 
 =head2 parse
 
@@ -476,25 +534,6 @@ Run your terrible code in your terrible language!
 By default it runs perl-compiled code.
 By setting $mode to non-zero value, it runs as an iterpreter.
 
-=head2 input
-
-Sets input file handle. C<STDIN> by default.
-
-=head2 output
-
-Sets output file handle. C<STDOUT> by default.
-
-=head2 preprocess
-
-    $bf->preprocses(  sub {
-        my $code_ref = shift;
-        $$code_ref =~ s{Ook(.) Ook(.)}{$1$2}g;
-    } );
-
-Sets a subroutine reference that is executed on C<code> method being called.
-Running subroutine takes a scalar reference holds a parsed code.
-
-By default it deletes all characters exception for opcodes.
 
 =head1 SPECIAL FEATURE
 

@@ -193,10 +193,46 @@ METHODS
 
     Constructs a brainf*ck virtual machine from BF source file.
 
-  code
-        $bf->code( $code );
+  input
+        $bf = $bf->input( $fh );
 
-    Set your terrible code in your terrible language!
+    Sets input file handle. "STDIN" by default. Returns the object itself.
+
+  output
+        $bf = $bf->output( $fh );
+
+    Sets output file handle. "STDOUT" by default.
+
+  optable
+        $bf = $bf->optable( $hashref );
+
+    Sets a list of opcode for your terrible language. This is a hash
+    reference must hold values:
+
+    ">", "<", "+", "-", ".", ",", "[", "]",
+
+    Returns the object itself.
+
+  preprocess
+        $bf = $bf->preprocses( $subref );
+
+    Sets a subroutine reference that is executed on "code" method being
+    called. Returns the object itself.
+
+    Running subroutine takes a scalar reference holds a parsed code.
+
+        $subref = sub {
+            my $code_ref = shift;
+            $$code_ref =~ s{Ook(.) Ook(.)}{$1$2}g;
+        };
+
+    By default it deletes all characters exception for opcodes.
+
+  code
+        $bf = $bf->code( $code );
+
+    Set your terrible code in your terrible language! Returns the object
+    itself.
 
   parse
     Alias to "code".
@@ -208,23 +244,6 @@ METHODS
 
     By default it runs perl-compiled code. By setting $mode to non-zero
     value, it runs as an iterpreter.
-
-  input
-    Sets input file handle. "STDIN" by default.
-
-  output
-    Sets output file handle. "STDOUT" by default.
-
-  preprocess
-        $bf->preprocses(  sub {
-            my $code_ref = shift;
-            $$code_ref =~ s{Ook(.) Ook(.)}{$1$2}g;
-        } );
-
-    Sets a subroutine reference that is executed on "code" method being
-    called. Running subroutine takes a scalar reference holds a parsed code.
-
-    By default it deletes all characters exception for opcodes.
 
 SPECIAL FEATURE
     "brainf*ck" is imported. You can now write "brainf*ck" in your code!
