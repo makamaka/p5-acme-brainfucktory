@@ -5,7 +5,7 @@ use Term::ReadKey;
 use Regexp::Assemble;
 use Carp ();
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 sub new {
@@ -229,8 +229,11 @@ sub as_perl { # copied and modified from Language::BF
     'print map{chr} sub ' . $_[0]->as_source. '->( *STDIN, *STDOUT )';
 }
 
-#perl -MAcme::BrainFucktory -le"print Acme::BrainFucktory->new_from_file(shift)->as_perl" test.b | perl
+#perl -MAcme::Brainfucktory -le"print Acme::Brainfucktory->new_from_file(shift)->as_perl" test.b | perl
 
+use base qw(Exporter);
+our @EXPORT = qw( brainf *ck );
+sub brainf ($) { __PACKAGE__->new; }
 
 
 1;
@@ -258,6 +261,7 @@ Acme::Brainfucktory -  Virtual machine generator for brainf*ck-like language
     
     $bf->run; # "Hello World!\n"
     
+    
     # from http://d.hatena.ne.jp/tokuhirom/20041015/p14
     my $nekomimi = Acme::Brainfucktory->new( {
         optable => {
@@ -271,7 +275,7 @@ Acme::Brainfucktory -  Virtual machine generator for brainf*ck-like language
             'キス…したくなっちゃった…'    => ']',
         },
     } );
-
+    
     $nekomimi->code(<<CODE);
     おにいさまおにいさまおにいさまおにいさまキスキス…
     ネコミミ！おにいさまおにいさま
@@ -352,6 +356,10 @@ Acme::Brainfucktory -  Virtual machine generator for brainf*ck-like language
     CODE
     
     $ook->run; # "Hello World!";
+    
+    
+    # exported feature!
+    $bf = brainf*ck;
 
 =head1 DESCRIPTION
 
@@ -487,6 +495,12 @@ Sets a subroutine reference that is executed on C<code> method being called.
 Running subroutine takes a scalar reference holds a parsed code.
 
 By default it deletes all characters exception for opcodes.
+
+=head1 SPECIAL FEATURE
+
+C<brainf*ck> is imported. You can now write "brainf*ck" in your code!
+
+    $bf = brainf*ck; # Acme::Brainfucktory object
 
 =head1 SEE ALSO
 
