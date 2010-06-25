@@ -97,9 +97,9 @@ sub output {
 }
 
 
-sub reset {
+sub reset { # copied and modified from Language::BF
     my $bf = shift;
-    ( $bf->{pc}, $bf->{sp} ) = ( 0, 0 );
+    ( $bf->{pc}, $bf->{sp}, $bf->{data} ) = ( 0, 0, [] );
     $bf;
 }
 
@@ -216,7 +216,7 @@ sub step { # copied and modified from Language::BF
 }
 
 
-sub as_source {
+sub as_source { # copied and modified from Language::BF
     my $bf = shift;
     require B::Deparse;
     my $source = B::Deparse->new()->coderef2text( $bf->{coderef} );
@@ -225,11 +225,11 @@ sub as_source {
 }
 
 
-sub as_perl {
+sub as_perl { # copied and modified from Language::BF
     'print map{chr} sub ' . $_[0]->as_source. '->( *STDIN, *STDOUT )';
 }
 
-#perl -I./lib -MAcme::BrainFucktory -le"print Acme::BrainFucktory->new_from_file(shift)->as_perl" test.b | perl
+#perl -MAcme::BrainFucktory -le"print Acme::BrainFucktory->new_from_file(shift)->as_perl" test.b | perl
 
 
 
@@ -467,6 +467,14 @@ Run your terrible code in your terrible language!
 
 By default it runs perl-compiled code.
 By setting $mode to non-zero value, it runs as an iterpreter.
+
+=head2 input
+
+Sets input file handle. C<STDIN> by default.
+
+=head2 output
+
+Sets output file handle. C<STDOUT> by default.
 
 =head2 preprocess
 
