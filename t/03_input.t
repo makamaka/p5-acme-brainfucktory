@@ -1,5 +1,5 @@
 
-use Test::More 'no_plan';
+use Test::More tests => 5;
 use Test::Output;
 use strict;
 use utf8;
@@ -13,13 +13,17 @@ $fb->code(<<CODE);
 ,+.,++.
 CODE
 
-tie *Input, 'TestStdin', 'abcd';
+tie *Input, 'TestStdin', 'abcdabcd';
 
 $fb->input( *Input );
 
 stdout_is( sub { $fb->run(0) }, "bd", 'compile mode' );
 
-stdout_is( sub { $fb->run(1) }, "df", 'compile mode' );
+stdout_is( sub { $fb->run(1) }, "df", 'interpret mode' );
+
+stdout_is( sub { $fb->run(0) }, "bd", 'compile mode retry' );
+
+stdout_is( sub { $fb->run(1) }, "df", 'interpret mode retry' );
 
 
 package TestStdin;

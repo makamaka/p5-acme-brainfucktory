@@ -1,6 +1,6 @@
 
 use strict;
-use Test::More 'no_plan';
+use Test::More tests => 3;
 use Test::Output;
 use utf8;
 
@@ -45,5 +45,6 @@ Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook!
 Ook! Ook. Ook. Ook? Ook. Ook? Ook. Ook. Ook! Ook. 
 CODE
 
-stdout_is( sub { $ook->run }, "Hello World!", 'ook' );
+stdout_is( sub { $ook->run(0) }, "Hello World!", 'ook - compile mode' );
 
+stdout_is( sub { $ook->run(1) }, "Hello World!", 'ook - interpret mode' );
