@@ -1,11 +1,11 @@
 NAME
-    Acme::BrainFucktory - Virtual machine generator for brainf*ck-like
+    Acme::Brainfucktory - Virtual machine generator for brainf*ck-like
     language
 
 SYNOPSIS
-        use Acme::BrainFucktory;
+        use Acme::Brainfucktory;
     
-        my $bf = Acme::BrainFucktory->new();
+        my $bf = Acme::Brainfucktory->new();
     
         $bf->code(<<CODE); # copied from Language::BF
         ++++++++++[>+++++++>++++++++++>+++>+<<<<-]
@@ -15,8 +15,9 @@ SYNOPSIS
     
         $bf->run; # "Hello World!\n"
     
+    
         # from http://d.hatena.ne.jp/tokuhirom/20041015/p14
-        my $nekomimi = Acme::BrainFucktory->new( {
+        my $nekomimi = Acme::Brainfucktory->new( {
             optable => {
                 'ネコミミ！'                    => '>',
                 'ネコミミモード'                => '<',
@@ -28,7 +29,7 @@ SYNOPSIS
                 'キス…したくなっちゃった…'    => ']',
             },
         } );
-
+    
         $nekomimi->code(<<CODE);
         おにいさまおにいさまおにいさまおにいさまキスキス…
         ネコミミ！おにいさまおにいさま
@@ -70,7 +71,7 @@ SYNOPSIS
         $nekomimi->run; # "Hello World!";
     
     
-        my $ook = Acme::BrainFucktory->new( {
+        my $ook = Acme::Brainfucktory->new( {
             preprocess => sub {
                 my $code_ref = shift;
                 $$code_ref =~ s{Ook(.) Ook(.)}{$1$2}g;
@@ -109,6 +110,10 @@ SYNOPSIS
         CODE
     
         $ook->run; # "Hello World!";
+    
+    
+        # exported feature!
+        $bf = brainf*ck;
 
 DESCRIPTION
     Welcome to BrainF*ck factory.
@@ -120,9 +125,9 @@ METHODS
     The concepts of almost methods come from Language::BF.
 
   new
-        $bf = Acme::BrainFucktory->new();
+        $bf = Acme::Brainfucktory->new();
     
-        $bf = Acme::BrainFucktory->new( $hashref );
+        $bf = Acme::Brainfucktory->new( $hashref );
 
     Constructs a brainf*ck virtual machine.
 
@@ -134,7 +139,7 @@ METHODS
 
         ">", "<", "+", "-", ".", ",", "[", "]",
 
-            my $your_lang = Acme::BrainFucktory->new( {
+            my $your_lang = Acme::Brainfucktory->new( {
                 optable => {
                     1 => '>',
                     2 => '<',
@@ -153,7 +158,7 @@ METHODS
         A subroutine reference that is executed on "code" method being
         called.
 
-            $ook = Acme::BrainFucktory->new( {
+            $ook = Acme::Brainfucktory->new( {
                 preprocess => sub {
                     my $code = ${ $_[0] };
                     ${ $_[0] } =~ s{Ook(.) Ook(.)}{$1$2}g;
@@ -184,7 +189,7 @@ METHODS
         Your terrible code in your terrible language.
 
   new_from_file
-        $bf = Acme::BrainFucktory->new_from_file( $hashref, $filename );
+        $bf = Acme::Brainfucktory->new_from_file( $hashref, $filename );
 
     Constructs a brainf*ck virtual machine from BF source file.
 
@@ -220,6 +225,11 @@ METHODS
     called. Running subroutine takes a scalar reference holds a parsed code.
 
     By default it deletes all characters exception for opcodes.
+
+SPECIAL FEATURE
+    "brainf*ck" is imported. You can now write "brainf*ck" in your code!
+
+        $bf = brainf*ck; # Acme::Brainfucktory object
 
 SEE ALSO
     Language::BF, Regexp::Assemble, Term::ReadKey
