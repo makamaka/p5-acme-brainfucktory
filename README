@@ -204,6 +204,12 @@ METHODS
     By default it runs perl-compiled code. By setting $mode to non-zero
     value, it runs as an iterpreter.
 
+  input
+    Sets input file handle. "STDIN" by default.
+
+  output
+    Sets output file handle. "STDOUT" by default.
+
   preprocess
         $bf->preprocses(  sub {
             my $code_ref = shift;
