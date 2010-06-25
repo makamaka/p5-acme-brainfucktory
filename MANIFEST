@@ -1,8 +1,12 @@
 Changes
-lib/Acme/BrainFucktory.pm
+lib/Acme/Brainfucktory.pm
 Makefile.PL
 MANIFEST			This list of files
 README
 t/01_base.t
 t/02_preprocess.t
 t/03_input.t
+t/04_nekomimi.t
+t/05_misa.t
+t/06_bf.t
+t/07_optable.t
