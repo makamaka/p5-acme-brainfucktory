@@ -116,13 +116,13 @@ SYNOPSIS
         $bf = brainf*ck;
 
 DESCRIPTION
-    Welcome to BrainF*ck factory.
+    Welcome to Brainf*ck factory.
 
     This module constructs virtual machines for your brainf*ck-like
     languages.
 
 METHODS
-    The concepts of almost methods come from Language::BF.
+    Most of the concepts and source codes come from Language::BF.
 
   new
         $bf = Acme::Brainfucktory->new();

@@ -363,13 +363,13 @@ Acme::Brainfucktory -  Virtual machine generator for brainf*ck-like language
 
 =head1 DESCRIPTION
 
-Welcome to BrainF*ck factory.
+Welcome to Brainf*ck factory.
 
 This module constructs virtual machines for your brainf*ck-like languages.
 
 =head1 METHODS
 
-The concepts of almost methods come from L<Language::BF>.
+Most of the concepts and source codes come from L<Language::BF>.
 
 =head2 new
 
