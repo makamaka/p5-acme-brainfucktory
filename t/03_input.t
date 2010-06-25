@@ -4,9 +4,9 @@ use Test::Output;
 use strict;
 use utf8;
 
-BEGIN { use_ok('Acme::BrainFucktory') };
+BEGIN { use_ok('Acme::Brainfucktory') };
 
-my $fb = Acme::BrainFucktory->new();
+my $fb = Acme::Brainfucktory->new();
 
 
 $fb->code(<<CODE);

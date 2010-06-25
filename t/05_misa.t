@@ -4,12 +4,12 @@ use Test::More tests => 2;
 use Test::Output;
 use utf8;
 
-BEGIN { use_ok('Acme::BrainFucktory') };
+BEGIN { use_ok('Acme::Brainfucktory') };
 
 
 # from http://homepage2.nifty.com/kujira_niku/okayu/misa.html
 
-my $misa = Acme::BrainFucktory->new( {
+my $misa = Acme::Brainfucktory->new( {
     optable => {
         '>'                     => '>',
         '→'                    => '>',

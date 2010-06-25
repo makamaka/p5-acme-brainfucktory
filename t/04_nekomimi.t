@@ -4,11 +4,11 @@ use Test::More tests => 3;
 use Test::Output;
 use utf8;
 
-BEGIN { use_ok('Acme::BrainFucktory') };
+BEGIN { use_ok('Acme::Brainfucktory') };
 
 # from http://d.hatena.ne.jp/tokuhirom/20041015/p14
 
-my $nekomimi = Acme::BrainFucktory->new( {
+my $nekomimi = Acme::Brainfucktory->new( {
     optable => {
         'ネコミミ！'                    => '>',
         'ネコミミモード'                => '<',

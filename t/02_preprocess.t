@@ -4,10 +4,10 @@ use Test::More tests => 3;
 use Test::Output;
 use utf8;
 
-BEGIN { use_ok('Acme::BrainFucktory') };
+BEGIN { use_ok('Acme::Brainfucktory') };
 
 
-my $ook = Acme::BrainFucktory->new( {
+my $ook = Acme::Brainfucktory->new( {
     optable => {
         '.?' => '>',
         '?.' => '<',

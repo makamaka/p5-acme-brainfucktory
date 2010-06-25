@@ -1,4 +1,4 @@
-package Acme::BrainFucktory;
+package Acme::Brainfucktory;
 
 use strict;
 use Term::ReadKey;
@@ -220,7 +220,7 @@ sub as_source { # copied and modified from Language::BF
     my $bf = shift;
     require B::Deparse;
     my $source = B::Deparse->new()->coderef2text( $bf->{coderef} );
-    $source =~ s{package Acme::BrainFucktory;}{package Acme::BrainFucktory;\n    use Term::ReadKey;};
+    $source =~ s{package Acme::Brainfucktory;}{package Acme::Brainfucktory;\n    use Term::ReadKey;};
     $source;
 }
 
@@ -242,13 +242,13 @@ __END__
 
 =head1 NAME
 
-Acme::BrainFucktory -  Virtual machine generator for brainf*ck-like language
+Acme::Brainfucktory -  Virtual machine generator for brainf*ck-like language
 
 =head1 SYNOPSIS
 
-    use Acme::BrainFucktory;
+    use Acme::Brainfucktory;
     
-    my $bf = Acme::BrainFucktory->new();
+    my $bf = Acme::Brainfucktory->new();
     
     $bf->code(<<CODE); # copied from Language::BF
     ++++++++++[>+++++++>++++++++++>+++>+<<<<-]
@@ -259,7 +259,7 @@ Acme::BrainFucktory -  Virtual machine generator for brainf*ck-like language
     $bf->run; # "Hello World!\n"
     
     # from http://d.hatena.ne.jp/tokuhirom/20041015/p14
-    my $nekomimi = Acme::BrainFucktory->new( {
+    my $nekomimi = Acme::Brainfucktory->new( {
         optable => {
             'ネコミミ！'                    => '>',
             'ネコミミモード'                => '<',
@@ -313,7 +313,7 @@ Acme::BrainFucktory -  Virtual machine generator for brainf*ck-like language
     $nekomimi->run; # "Hello World!";
     
     
-    my $ook = Acme::BrainFucktory->new( {
+    my $ook = Acme::Brainfucktory->new( {
         preprocess => sub {
             my $code_ref = shift;
             $$code_ref =~ s{Ook(.) Ook(.)}{$1$2}g;
@@ -365,9 +365,9 @@ The concepts of almost methods come from L<Language::BF>.
 
 =head2 new
 
-    $bf = Acme::BrainFucktory->new();
+    $bf = Acme::Brainfucktory->new();
     
-    $bf = Acme::BrainFucktory->new( $hashref );
+    $bf = Acme::Brainfucktory->new( $hashref );
 
 Constructs a brainf*ck virtual machine.
 
@@ -389,7 +389,7 @@ C<,>,
 C<[>,
 C<]>,
 
-    my $your_lang = Acme::BrainFucktory->new( {
+    my $your_lang = Acme::Brainfucktory->new( {
         optable => {
             1 => '>',
             2 => '<',
@@ -408,7 +408,7 @@ By default Brainf*ck.
 
 A subroutine reference that is executed on C<code> method being called.
 
-    $ook = Acme::BrainFucktory->new( {
+    $ook = Acme::Brainfucktory->new( {
         preprocess => sub {
             my $code = ${ $_[0] };
             ${ $_[0] } =~ s{Ook(.) Ook(.)}{$1$2}g;
@@ -445,7 +445,7 @@ Your terrible code in your terrible language.
 
 =head2 new_from_file
 
-    $bf = Acme::BrainFucktory->new_from_file( $hashref, $filename );
+    $bf = Acme::Brainfucktory->new_from_file( $hashref, $filename );
 
 Constructs a brainf*ck virtual machine from BF source file.
 
