@@ -10,7 +10,6 @@ WriteMakefile(
               'Term::ReadKey'       => 0,
               'Test::More'          => 0,
               'Test::Output'        => '0.16',
-              'Language::BF'        => '0.03',
               'Regexp::Assemble '   => '0.34',
     },
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
